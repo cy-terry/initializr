@@ -59,7 +59,8 @@
 		<module>initializr-service-sample</module>
 		<module>initializr-version-resolver</module>
 		<module>initializr-web</module>
-	</modules>
+        <module>initializr-generator-wii</module>
+    </modules>
 
 	<build>
 		<plugins>

@@ -1,0 +1,3 @@
+io.spring.initializr.generator.project.ProjectGenerationConfiguration=\
+  com.tencent.wii.generator.build.maven.WiiProjectGenerationConfiguration,\
+  com.tencent.wii.generator.scm.git.GitProjectGenerationConfiguration
