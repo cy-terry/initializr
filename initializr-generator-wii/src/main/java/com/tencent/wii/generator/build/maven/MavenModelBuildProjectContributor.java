@@ -28,7 +28,7 @@ import java.nio.file.Path;
  * @author Andy Wilkinson
  * @author Stephane Nicoll
  */
-public class MavenBuildProjectContributor implements ProjectContributor {
+public class MavenModelBuildProjectContributor implements ProjectContributor {
 
 	private final MavenBuild build;
 
@@ -36,7 +36,7 @@ public class MavenBuildProjectContributor implements ProjectContributor {
 
 	private final MavenBuildWriter buildWriter;
 
-	public MavenBuildProjectContributor(MavenBuild build, IndentingWriterFactory indentingWriterFactory) {
+	public MavenModelBuildProjectContributor(MavenBuild build, IndentingWriterFactory indentingWriterFactory) {
 		this.build = build;
 		this.indentingWriterFactory = indentingWriterFactory;
 		this.buildWriter = new MavenBuildWriter();

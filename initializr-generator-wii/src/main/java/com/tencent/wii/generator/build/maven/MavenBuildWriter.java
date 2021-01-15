@@ -68,7 +68,10 @@ public class MavenBuildWriter {
         }
         for (MavenBuild model : build.getMavenModelContainer().getModels()) {
             String modelName = model.getSettings().getArtifact();
-            Path modelPath = Files.createDirectory(projectRoot.resolve(modelName));
+            Path modelPath = projectRoot.resolve(modelName);
+            if (!Files.exists(modelPath)) {
+                Files.createDirectory(modelPath);
+            }
             Path modelPomFile = Files.createFile(modelPath.resolve("pom.xml"));
             try (IndentingWriter writer = writerFactory.createIndentingWriter("maven", Files.newBufferedWriter(modelPomFile))) {
                 this.writeTo(writer, build);

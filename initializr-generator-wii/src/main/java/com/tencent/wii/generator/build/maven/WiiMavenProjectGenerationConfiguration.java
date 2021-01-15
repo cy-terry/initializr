@@ -7,7 +7,9 @@ import io.spring.initializr.generator.condition.ConditionalOnBuildSystem;
 import io.spring.initializr.generator.condition.ConditionalOnPackaging;
 import io.spring.initializr.generator.io.IndentingWriterFactory;
 import io.spring.initializr.generator.packaging.war.WarPackaging;
+import io.spring.initializr.generator.project.ProjectDescription;
 import io.spring.initializr.generator.project.ProjectGenerationConfiguration;
+import io.spring.initializr.metadata.InitializrMetadata;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.util.LambdaSafe;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
  */
 @ProjectGenerationConfiguration
 @ConditionalOnBuildSystem(MavenBuildSystem.ID)
-public class WiiProjectGenerationConfiguration {
+public class WiiMavenProjectGenerationConfiguration {
 
     @Bean
     public MavenWrapperContributor mavenWrapperContributor() {
@@ -32,7 +34,7 @@ public class WiiProjectGenerationConfiguration {
 
     @Bean
     public MavenBuild mavenBuild(ObjectProvider<BuildItemResolver> buildItemResolver,
-                                                                                  ObjectProvider<BuildCustomizer<?>> buildCustomizers) {
+                                 ObjectProvider<BuildCustomizer<?>> buildCustomizers) {
         return createBuild(buildItemResolver.getIfAvailable(),
                 buildCustomizers.orderedStream().collect(Collectors.toList()));
     }
@@ -45,14 +47,20 @@ public class WiiProjectGenerationConfiguration {
     }
 
     @Bean
-    public MavenBuildProjectContributor mavenBuildProjectContributor(MavenBuild build,
-                                                                     IndentingWriterFactory indentingWriterFactory) {
-        return new MavenBuildProjectContributor(build, indentingWriterFactory);
+    public MavenModelBuildProjectContributor mavenBuildProjectContributor(MavenBuild build,
+                                                                          IndentingWriterFactory indentingWriterFactory) {
+        return new MavenModelBuildProjectContributor(build, indentingWriterFactory);
     }
 
     @Bean
     @ConditionalOnPackaging(WarPackaging.ID)
     public BuildCustomizer<MavenBuild> mavenWarPackagingConfigurer() {
         return (build) -> build.settings().packaging("war");
+    }
+
+    @Bean
+    public BuildCustomizer<MavenBuild> wiiAppMavenBuildConfigurer(ProjectDescription description,
+                                                                  InitializrMetadata metadata) {
+        return new WiiAppMavenBuildCustomizer(description, metadata);
     }
 }

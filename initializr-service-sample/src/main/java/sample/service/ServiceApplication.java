@@ -18,8 +18,13 @@ package sample.service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.server.ErrorPage;
+import org.springframework.boot.web.server.ErrorPageRegistrar;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.EnableAsync;
+import sample.service.web.HomeController;
 
 /**
  * Sample service application.
@@ -33,6 +38,14 @@ public class ServiceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(ServiceApplication.class, args);
+	}
+
+	@Bean
+	public ErrorPageRegistrar errorPageRegistrar() {
+		return (registry) -> {
+			registry.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/404.html"));
+			registry.addErrorPages(new ErrorPage("/error/index.html"));
+		};
 	}
 
 }
