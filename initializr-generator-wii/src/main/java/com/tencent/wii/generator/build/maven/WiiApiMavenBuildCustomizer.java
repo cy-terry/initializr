@@ -18,6 +18,7 @@ package com.tencent.wii.generator.build.maven;
 
 import com.tencent.wii.generator.build.BuildCustomizer;
 import com.tencent.wii.generator.build.WiiAppDependencyBuild;
+import com.tencent.wii.generator.common.util.WiiModelUtil;
 import io.spring.initializr.generator.buildsystem.BuildItemResolver;
 import io.spring.initializr.generator.project.ProjectDescription;
 import io.spring.initializr.metadata.InitializrConfiguration.Env.Maven;
@@ -59,7 +60,7 @@ public class WiiApiMavenBuildCustomizer extends WiiAppDependencyBuild<MavenBuild
     }
 
     private void project(MavenBuild build) {
-        build.settings().artifact(description.getArtifactId() + "-api")
+        build.settings().artifact(WiiModelUtil.apiName(description))
             .version(description.getVersion());
     }
 
