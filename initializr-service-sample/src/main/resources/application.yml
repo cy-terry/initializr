@@ -27,6 +27,16 @@ spring:
         use-last-modified: false
 
 initializr:
+  group-id:
+    value: com.tencent.wii
+  artifact-id:
+    value: application
+  name:
+    value: application
+  description:
+    value: application project for wii-spring
+  package-name:
+    value: com.tencent.wii.app
   env:
     boms:
       azure:
@@ -237,8 +247,12 @@ initializr:
   dependencies:
     - name: Wii Spring
       content:
-        - name: Wii Http
-          id: wii-http
+        - name: Wii core
+          id: wii-core
+          groupId: com.tencent.wii
+          artifactId: wii-core
+          version: 3.0.0-dev-SNAPSHOT
+          scope: runtime
           description: wii http 协议组件包
     - name: Developer Tools
       content:
@@ -1542,9 +1556,6 @@ initializr:
     - name: Jar
       id: jar
       default: true
-    - name: War
-      id: war
-      default: false
   javaVersions:
 #    - id: 15
 #      default: false
@@ -1564,8 +1575,8 @@ initializr:
 #      id: groovy
 #      default: false
   bootVersions:
-    - name : Latest SNAPSHOT
-      id: 2.2.0.BUILD-SNAPSHOT
+    - name : 2.3.7.RELEASE
+      id: 2.3.7.RELEASE
       default: true
 
 ---

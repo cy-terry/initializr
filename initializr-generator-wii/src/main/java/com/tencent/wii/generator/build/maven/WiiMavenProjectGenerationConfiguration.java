@@ -4,9 +4,7 @@ import com.tencent.wii.generator.build.BuildCustomizer;
 import io.spring.initializr.generator.buildsystem.BuildItemResolver;
 import io.spring.initializr.generator.buildsystem.maven.MavenBuildSystem;
 import io.spring.initializr.generator.condition.ConditionalOnBuildSystem;
-import io.spring.initializr.generator.condition.ConditionalOnPackaging;
 import io.spring.initializr.generator.io.IndentingWriterFactory;
-import io.spring.initializr.generator.packaging.war.WarPackaging;
 import io.spring.initializr.generator.project.ProjectDescription;
 import io.spring.initializr.generator.project.ProjectGenerationConfiguration;
 import io.spring.initializr.metadata.InitializrMetadata;
@@ -53,14 +51,43 @@ public class WiiMavenProjectGenerationConfiguration {
     }
 
     @Bean
-    @ConditionalOnPackaging(WarPackaging.ID)
-    public BuildCustomizer<MavenBuild> mavenWarPackagingConfigurer() {
-        return (build) -> build.settings().packaging("war");
+    public BuildCustomizer<MavenBuild> wiiParentMavenBuildConfigurer(ProjectDescription description,
+                                                                  InitializrMetadata metadata) {
+        return new WiiParentMavenBuildCustomizer(description, metadata);
+    }
+
+    @Bean
+    public BuildCustomizer<MavenBuild> wiiWebMavenBuildConfigurer(ProjectDescription description,
+                                                                  InitializrMetadata metadata,
+                                                                  ObjectProvider<BuildItemResolver> buildItemResolver) {
+        return new WiiWebMavenBuildCustomizer(description, metadata, buildItemResolver.getIfAvailable());
+    }
+
+    @Bean
+    public BuildCustomizer<MavenBuild> wiiOssMavenBuildConfigurer(ProjectDescription description,
+                                                                  InitializrMetadata metadata,
+                                                                  ObjectProvider<BuildItemResolver> buildItemResolver) {
+        return new WiiOssMavenBuildCustomizer(description, metadata, buildItemResolver.getIfAvailable());
+    }
+
+    @Bean
+    public BuildCustomizer<MavenBuild> wiiApiMavenBuildConfigurer(ProjectDescription description,
+                                                                  InitializrMetadata metadata,
+                                                                  ObjectProvider<BuildItemResolver> buildItemResolver) {
+        return new WiiApiMavenBuildCustomizer(description, metadata, buildItemResolver.getIfAvailable());
     }
 
     @Bean
     public BuildCustomizer<MavenBuild> wiiAppMavenBuildConfigurer(ProjectDescription description,
-                                                                  InitializrMetadata metadata) {
-        return new WiiAppMavenBuildCustomizer(description, metadata);
+                                                                   InitializrMetadata metadata,
+                                                                   ObjectProvider<BuildItemResolver> buildItemResolver) {
+        return new WiiAppMavenBuildCustomizer(description, metadata, buildItemResolver.getIfAvailable());
+    }
+
+    @Bean
+    public BuildCustomizer<MavenBuild> wiiCoreMavenBuildConfigurer(ProjectDescription description,
+                                                                  InitializrMetadata metadata,
+                                                                  ObjectProvider<BuildItemResolver> buildItemResolver) {
+        return new WiiCoreMavenBuildCustomizer(description, metadata, buildItemResolver.getIfAvailable());
     }
 }

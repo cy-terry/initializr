@@ -1,7 +1,9 @@
 package com.tencent.wii.generator.build.maven;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -13,7 +15,7 @@ import java.util.List;
  */
 public class MavenModelContainer {
 
-    private final List<MavenBuild> models = new LinkedList<>();
+    private final Map<String, MavenBuild> models = new LinkedHashMap<>();
 
     /**
      * 添加model
@@ -21,10 +23,10 @@ public class MavenModelContainer {
      * @param model model
      */
     public void addModel(MavenBuild model) {
-        models.add(model);
+        models.put(model.getSettings().getArtifact(), model);
     }
 
-    public List<MavenBuild> getModels() {
+    public Map<String, MavenBuild> getModels() {
         return models;
     }
 }

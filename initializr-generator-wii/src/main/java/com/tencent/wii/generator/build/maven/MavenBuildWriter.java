@@ -27,6 +27,7 @@ import io.spring.initializr.generator.io.IndentingWriterFactory;
 import io.spring.initializr.generator.version.VersionProperty;
 import io.spring.initializr.generator.version.VersionReference;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -66,15 +67,15 @@ public class MavenBuildWriter {
         try (IndentingWriter writer = writerFactory.createIndentingWriter("maven", Files.newBufferedWriter(pomFile))) {
             this.writeTo(writer, build);
         }
-        for (MavenBuild model : build.getMavenModelContainer().getModels()) {
-            String modelName = model.getSettings().getArtifact();
+        for (Map.Entry<String, MavenBuild> entry : build.getMavenModelContainer().getModels().entrySet()) {
+            String modelName = entry.getValue().getSettings().getArtifact();
             Path modelPath = projectRoot.resolve(modelName);
             if (!Files.exists(modelPath)) {
                 Files.createDirectory(modelPath);
             }
             Path modelPomFile = Files.createFile(modelPath.resolve("pom.xml"));
             try (IndentingWriter writer = writerFactory.createIndentingWriter("maven", Files.newBufferedWriter(modelPomFile))) {
-                this.writeTo(writer, build);
+                this.writeTo(writer, entry.getValue());
             }
         }
     }
@@ -110,13 +111,13 @@ public class MavenBuildWriter {
     }
 
     private void writeModel(IndentingWriter writer, MavenModelContainer modelContainer) {
-        List<MavenBuild> mavenBuilds = modelContainer.getModels();
+        Map<String, MavenBuild> mavenBuilds = modelContainer.getModels();
         if (mavenBuilds == null || mavenBuilds.isEmpty()) {
             return;
         }
         writeElement(writer, "modules", () ->
-                mavenBuilds.forEach(model ->
-                        writeSingleElement(writer, "module", model.getSettings().getArtifact())));
+                mavenBuilds.forEach((k, v) ->
+                        writeSingleElement(writer, "module", v.getSettings().getArtifact())));
     }
 
     private void writeProject(IndentingWriter writer, Runnable whenWritten) {
@@ -324,8 +325,19 @@ public class MavenBuildWriter {
             writeSingleElement(writer, "groupId", bom.getGroupId());
             writeSingleElement(writer, "artifactId", bom.getArtifactId());
             writeSingleElement(writer, "version", determineVersion(bom.getVersion()));
-            writeSingleElement(writer, "type", "pom");
-            writeSingleElement(writer, "scope", "import");
+            if (bom instanceof com.tencent.wii.generator.build.BillOfMaterials) {
+                String type = ((com.tencent.wii.generator.build.BillOfMaterials) bom).getType();
+                if (StringUtils.hasLength(type)) {
+                    writeSingleElement(writer, "type", type);
+                }
+                String scope = ((com.tencent.wii.generator.build.BillOfMaterials) bom).getScope();
+                if (StringUtils.hasLength(scope)) {
+                    writeSingleElement(writer, "scope", scope);
+                }
+            } else {
+                writeSingleElement(writer, "type", "pom");
+                writeSingleElement(writer, "scope", "import");
+            }
         });
     }
 

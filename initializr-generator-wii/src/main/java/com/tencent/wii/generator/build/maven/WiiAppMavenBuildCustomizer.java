@@ -17,72 +17,107 @@
 package com.tencent.wii.generator.build.maven;
 
 import com.tencent.wii.generator.build.BuildCustomizer;
-import io.spring.initializr.generator.buildsystem.BillOfMaterials;
+import com.tencent.wii.generator.build.WiiAppDependencyBuild;
+import com.tencent.wii.generator.common.Constant;
+import io.spring.initializr.generator.buildsystem.BuildItemResolver;
+import io.spring.initializr.generator.buildsystem.Dependency;
+import io.spring.initializr.generator.buildsystem.DependencyScope;
 import io.spring.initializr.generator.project.ProjectDescription;
-import io.spring.initializr.generator.version.VersionProperty;
+import io.spring.initializr.generator.version.VersionReference;
 import io.spring.initializr.metadata.InitializrConfiguration.Env.Maven;
-import io.spring.initializr.metadata.InitializrConfiguration.Env.Maven.ParentPom;
 import io.spring.initializr.metadata.InitializrMetadata;
-import io.spring.initializr.metadata.support.MetadataBuildItemMapper;
+
+import java.util.Objects;
 
 /**
  * The default {@link Maven} {@link BuildCustomizer}.
  *
  * @author Stephane Nicoll
  */
-public class WiiAppMavenBuildCustomizer implements BuildCustomizer<MavenBuild> {
+public class WiiAppMavenBuildCustomizer extends WiiAppDependencyBuild<MavenBuild> implements BuildCustomizer<MavenBuild> {
 
-	private final ProjectDescription description;
+    private final ProjectDescription description;
 
-	private final InitializrMetadata metadata;
+    private final InitializrMetadata metadata;
 
-	public WiiAppMavenBuildCustomizer(ProjectDescription description, InitializrMetadata metadata) {
-		this.description = description;
-		this.metadata = metadata;
-	}
+    private final BuildItemResolver buildItemResolver;
 
-	@Override
-	public void customize(MavenBuild build) {
+    public WiiAppMavenBuildCustomizer(ProjectDescription description, InitializrMetadata metadata, BuildItemResolver buildItemResolver) {
+        this.description = description;
+        this.metadata = metadata;
+        this.buildItemResolver = buildItemResolver;
+    }
 
-		// 构建 parent
+    @Override
+    public void customize(MavenBuild build) {
+        MavenBuild appModel = new MavenBuild(buildItemResolver);
 
-		// 构建 core
+        project(appModel);
+        parent(appModel);
+        dependency(appModel);
+        plugin(appModel);
 
-		// 构建 app
+        build.addModel(appModel);
+    }
 
-		// 构建 web
+    @Override
+    public int getOrder() {
+        return 1;
+    }
 
-		// 构建 oss
+    private void project(MavenBuild build) {
+        build.settings().artifact(description.getArtifactId() + "-app")
+                .version(description.getVersion());
+    }
 
-		// 构建 api
+    private void parent(MavenBuild build) {
+        build.settings().parent(description.getGroupId(), description.getArtifactId(), description.getVersion());
+    }
 
+    private void dependency(MavenBuild build) {
+        build(build, description);
 
-		build.settings().name(this.description.getName()).description(this.description.getDescription());
-		build.properties().property("java.version", this.description.getLanguage().jvmVersion());
-		build.plugins().add("org.springframework.boot", "spring-boot-maven-plugin");
+        build.dependencies().add("spring-boot-starter-test", Dependency
+                .withCoordinates(Constant.SPRINGBOOT_GROUP, "spring-boot-starter-test")
+                .scope(DependencyScope.TEST_RUNTIME)
+        );
 
-		Maven maven = this.metadata.getConfiguration().getEnv().getMaven();
-		String springBootVersion = this.description.getPlatformVersion().toString();
-		ParentPom parentPom = maven.resolveParentPom(springBootVersion);
-		if (parentPom.isIncludeSpringBootBom()) {
-			String versionProperty = "spring-boot.version";
-			BillOfMaterials springBootBom = MetadataBuildItemMapper
-					.toBom(this.metadata.createSpringBootBom(springBootVersion, versionProperty));
-			if (!hasBom(build, springBootBom)) {
-				build.properties().version(VersionProperty.of(versionProperty, true), springBootVersion);
-				build.boms().add("spring-boot", springBootBom);
-			}
-		}
-		if (!maven.isSpringBootStarterParent(parentPom)) {
-			build.properties().property("project.build.sourceEncoding", "UTF-8")
-					.property("project.reporting.outputEncoding", "UTF-8");
-		}
-		build.settings().parent(parentPom.getGroupId(), parentPom.getArtifactId(), parentPom.getVersion());
-	}
+        Dependency dependency = description.getRequestedDependencies().get("devtools");
+        if (Objects.nonNull(dependency)) {
+            build.dependencies().add("devtools", dependency);
+        }
+    }
 
-	private boolean hasBom(MavenBuild build, BillOfMaterials bom) {
-		return build.boms().items().anyMatch((candidate) -> candidate.getGroupId().equals(bom.getGroupId())
-				&& candidate.getArtifactId().equals(bom.getArtifactId()));
-	}
+    private void plugin(MavenBuild build) {
+        build.plugins().add(Constant.SPRINGBOOT_GROUP,
+                "spring-boot-maven-plugin",
+                builder -> builder.version("${spring-boot.version}")
+                        .configuration(configurationBuilder -> configurationBuilder
+                        .add("mainClass", description.getPackageName() + "." + Constant.APPLICATION_CLASS_NAME))
+                        .execution("repackage", executionBuilder -> executionBuilder.configuration(configurationBuilder -> configurationBuilder
+                                .add("id", "repackage")
+                                .add("goals", configurationBuilder1 -> configurationBuilder1
+                                        .add("goal", "repackage"))))
+        );
+    }
 
+    @Override
+    protected void build(MavenBuild build, ProjectDescription description) {
+        super.build(build, description);
+
+        build.dependencies().add(description.getArtifactId() + "-api", Dependency
+                .withCoordinates(description.getGroupId(), description.getArtifactId() + "-api")
+                .version(VersionReference.ofValue(description.getVersion()))
+                .build());
+
+        build.dependencies().add(description.getArtifactId() + "-web", Dependency
+                .withCoordinates(description.getGroupId(), description.getArtifactId() + "-web")
+                .version(VersionReference.ofValue(description.getVersion()))
+                .build());
+
+        build.dependencies().add(description.getArtifactId() + "-oss", Dependency
+                .withCoordinates(description.getGroupId(), description.getArtifactId() + "-oss")
+                .version(VersionReference.ofValue(description.getVersion()))
+                .build());
+    }
 }
