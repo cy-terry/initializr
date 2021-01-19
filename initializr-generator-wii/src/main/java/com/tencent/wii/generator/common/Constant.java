@@ -13,4 +13,10 @@ public interface Constant {
     String EMPTY_STR = "";
 
     String APPLICATION_CLASS_NAME = "Application";
+
+    String MYBATIS_ID = "mybatis";
+
+    String VALIDATION_ID = "validation";
+
+    String WEB_ID = "web";
 }

@@ -16,10 +16,14 @@
 
 package com.tencent.wii.generator.configuration;
 
+import com.tencent.wii.generator.common.Constant;
+import com.tencent.wii.generator.common.util.WiiModelUtil;
+import io.spring.initializr.generator.language.SourceStructure;
 import io.spring.initializr.generator.project.ProjectDescription;
 import io.spring.initializr.generator.project.contributor.SingleResourceProjectContributor;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -43,6 +47,19 @@ public class WiiApplicationPropertiesContributor extends SingleResourceProjectCo
 
 	@Override
 	public void contribute(Path projectRoot) throws IOException {
-		super.contribute(projectRoot.resolve(description.getArtifactId() + "-app"));
+		Path appPath = projectRoot.resolve(WiiModelUtil.appName(description));
+		super.contribute(appPath);
+		SourceStructure sourceStructure = description.getBuildSystem().getMainSource(appPath, description.getLanguage());
+
+		if (!Files.exists(sourceStructure.getResourcesDirectory())) {
+			Files.createDirectories(sourceStructure.getResourcesDirectory());
+		}
+
+		if (description.getRequestedDependencies().containsKey(Constant.MYBATIS_ID)) {
+			Path mapper = sourceStructure.getResourcesDirectory().resolve("mapper");
+			if (!Files.exists(mapper)) {
+				Files.createDirectories(mapper);
+			}
+		}
 	}
 }

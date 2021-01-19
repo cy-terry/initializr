@@ -67,7 +67,7 @@ public class WiiAppMavenBuildCustomizer extends WiiAppDependencyBuild<MavenBuild
     }
 
     private void project(MavenBuild build) {
-        build.settings().artifact(WiiModelUtil.apiName(description))
+        build.settings().artifact(WiiModelUtil.appName(description))
                 .version(description.getVersion());
     }
 

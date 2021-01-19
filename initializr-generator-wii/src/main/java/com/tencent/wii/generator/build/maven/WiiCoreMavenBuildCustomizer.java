@@ -74,6 +74,13 @@ public class WiiCoreMavenBuildCustomizer extends WiiAppDependencyBuild<MavenBuil
     private void dependency(MavenBuild build) {
         DependencyContainer container = build.dependencies();
 
+        container.add("starter", Dependency.withCoordinates(Constant.SPRINGBOOT_GROUP, "spring-boot-starter"));
+        if (!description.getRequestedDependencies().containsKey(Constant.WEB_ID)) {
+            container.add(Constant.WEB_ID, Dependency.withCoordinates(
+                    metadata.getDependencies().get(Constant.WEB_ID).getGroupId(),
+                    metadata.getDependencies().get(Constant.WEB_ID).getArtifactId()
+            ));
+        }
         description.getRequestedDependencies().forEach(container::add);
     }
 }

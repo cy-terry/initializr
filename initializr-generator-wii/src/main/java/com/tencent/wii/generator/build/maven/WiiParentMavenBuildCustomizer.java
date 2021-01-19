@@ -40,6 +40,9 @@ public class WiiParentMavenBuildCustomizer implements BuildCustomizer<MavenBuild
 
     private final InitializrMetadata metadata;
 
+    private static final MavenRepository SPRING_MILESTONES = MavenRepository
+            .withIdAndUrl("spring-milestones", "https://repo.spring.io/milestone").name("Spring Milestones").build();
+
     public WiiParentMavenBuildCustomizer(ProjectDescription description, InitializrMetadata metadata) {
         this.description = description;
         this.metadata = metadata;
@@ -88,8 +91,13 @@ public class WiiParentMavenBuildCustomizer implements BuildCustomizer<MavenBuild
     }
 
     private void repository(MavenBuild build) {
-        build.repositories().add(MavenRepository
-                .withIdAndUrl("wii-repo", "https://wii.coding.net/public-artifacts/wii-spring/repo"));
+        build.repositories().add(MavenRepository.MAVEN_CENTRAL);
+        build.repositories().add(SPRING_MILESTONES);
+//        build.repositories().add(MavenRepository
+//                .withIdAndUrl("wii-repo", "https://wii.coding.net/public-artifacts/wii-spring/repo")
+//                .snapshotsEnabled(true)
+//                .name("wii repo").build()
+//        );
     }
 
     private void bom(MavenBuild build) {
